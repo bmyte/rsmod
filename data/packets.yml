@@ -178,10 +178,10 @@ out-packets:
     type: FIXED
     opcode: 30
     structure:
-      - name: x
+      - name: z
         type: BYTE
         trans: ADD
-      - name: z
+      - name: x
         type: BYTE
         trans: SUBTRACT
 
@@ -335,6 +335,13 @@ out-packets:
       - name: hash
         type: INT
       - name: text
+        type: BYTES
+
+  - message: gg.rsmod.game.message.impl.OpenUrlMessage
+    type: VARIABLE_SHORT
+    opcode: 64
+    structure:
+      - name: url
         type: BYTES
 
   - message: gg.rsmod.game.message.impl.UpdateRunEnergyMessage

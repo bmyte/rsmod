@@ -2,6 +2,8 @@ package gg.rsmod.plugins.content
 
 import gg.rsmod.game.model.attr.INTERACTING_ITEM_SLOT
 import gg.rsmod.game.model.attr.OTHER_ITEM_SLOT_ATTR
+import gg.rsmod.game.model.attr.LAST_LOGIN_ATTR
+import gg.rsmod.game.model.timer.TimeConstants
 import gg.rsmod.plugins.content.inter.welcome.WelcomeScreen.openChristmasWelcome
 
 /**
@@ -26,8 +28,13 @@ set_menu_open_check {
  * Execute when a player logs in.
  */
 on_login {
+    val now = System.currentTimeMillis()
+    val last = player.attr.getOrDefault(LAST_LOGIN_ATTR, now.toString()).toLong()
+    val time_lapsed = now - last
+    player.attr[LAST_LOGIN_ATTR] = now.toString()
+
     // Skill-related logic.
-    if (player.getSkills().getMaxLevel(Skills.HITPOINTS) < 10) {
+    if (player.getSkills().getBaseLevel(Skills.HITPOINTS) < 10) {
         player.getSkills().setBaseLevel(Skills.HITPOINTS, 10)
     }
     player.calculateAndSetCombatLevel()
@@ -35,7 +42,7 @@ on_login {
     player.sendCombatLevelText()
 
     // Interface-related logic.
-    openChristmasWelcome(player)
+    openChristmasWelcome(player, (time_lapsed/TimeConstants.MINUTE).toInt())
 
     // Inform the client whether or not we have a display name.
     val displayName = player.username.isNotBlank()
@@ -78,9 +85,25 @@ on_component_item_swap(interfaceId = 149, component = 0) {
 }
 
 object OSRSInterfaces {
-    fun openDefaultInterfaces(player: Player) {
-        player.openOverlayInterface(player.interfaces.displayMode)
-        openModals(player)
+    fun Player.openDefaultInterfaces() {
+        openOverlayInterface(interfaces.displayMode)
+        openModals(this)
+        setInterfaceEvents(interfaceId = 239, component = 3, range = 0..648, setting = 6) // enable music buttons
+        runClientScript(2498, 0, 0, 0)
+//        setInterfaceEvents(interfaceId = 548, component = 51, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 52, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 53, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 54, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 55, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 56, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 57, range = -1..-1, setting = 6)
+//        setInterfaceEvents(interfaceId = 548, component = 34, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 35, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 36, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 37, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 38, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 39, range = -1..-1, setting = 2)
+//        setInterfaceEvents(interfaceId = 548, component = 40, range = -1..-1, setting = 2)
     }
 
     fun openModals(player: Player, fullscreen: Boolean = false) {
@@ -91,7 +114,10 @@ object OSRSInterfaces {
                 return@forEach
             } else if (pane == InterfaceDestination.QUEST_ROOT) {
                 player.openInterface(pane.interfaceId, pane, fullscreen)
-                player.openInterface(InterfaceDestination.QUEST_ROOT.interfaceId, 33, 399, 1)
+                player.openInterface(InterfaceDestination.QUEST_ROOT.interfaceId, 33, 399, 1) // quest sub interfaces
+                player.setInterfaceEvents(interfaceId = 399, component = 6, range = 0..20, setting = 14)
+                player.setInterfaceEvents(interfaceId = 399, component = 7, range = 0..125, setting = 14)
+                player.setInterfaceEvents(interfaceId = 399, component = 8, range = 0..13, setting = 14)
                 return@forEach
             }
             player.openInterface(pane.interfaceId, pane, fullscreen)

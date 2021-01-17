@@ -3,6 +3,7 @@ package gg.rsmod.plugins.api.ext
 import gg.rsmod.game.fs.DefinitionSet
 import gg.rsmod.game.fs.def.ItemDef
 import gg.rsmod.game.fs.def.ObjectDef
+import gg.rsmod.game.model.item.Item
 
 /**
  * A map of numbers to English string literals
@@ -55,6 +56,8 @@ fun Int.formatRS2() : String {
         else -> "${this / 1_000_000}M"
     }
 }
+
+fun Int.toItem(): Item = Item(this)
 
 fun Int.getItemName(definitions: DefinitionSet, lowercase: Boolean = false): String {
     return if(lowercase)
