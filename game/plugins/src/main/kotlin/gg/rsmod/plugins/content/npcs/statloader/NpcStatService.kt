@@ -5,6 +5,8 @@ import com.google.gson.reflect.TypeToken
 import gg.rsmod.game.Server
 import gg.rsmod.game.model.World
 import gg.rsmod.game.service.Service
+import gg.rsmod.plugins.api.ext.appendToString
+import gg.rsmod.plugins.content.mechanics.doors.DoorService
 import gg.rsmod.util.ServerProperties
 import java.io.FileNotFoundException
 import java.lang.reflect.Type
@@ -44,6 +46,8 @@ class NpcStatService : Service {
                 npcData[key] = data
             }
         }
+
+        DoorService.logger.info { "Loaded ${npcData.size.appendToString("npc stats")}." }
     }
 
     override fun postLoad(server: Server, world: World) {
