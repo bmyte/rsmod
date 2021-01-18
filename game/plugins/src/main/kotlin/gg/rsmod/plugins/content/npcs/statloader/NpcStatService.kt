@@ -47,7 +47,7 @@ class NpcStatService : Service {
             }
         }
 
-        DoorService.logger.info { "Loaded ${npcData.size.appendToString("npc stats")}." }
+        DoorService.logger.info { "Loaded ${npcData.size.appendToString("npc stat")}." }
     }
 
     override fun postLoad(server: Server, world: World) {
