@@ -77,6 +77,21 @@ class ItemContainer(val definitions: DefinitionSet, val key: ContainerKey) : Ite
     val freeSlotCount: Int get() = items.count { it == null }
 
     /**
+     * Gets the most-right/last index(slot) that is not occupied by an [Item] but it next to an [Item].
+     * Defaults to -1 if none is found.
+     */
+    fun getLastFreeSlot(): Int {
+        var lastEmpty = -1;
+        for (index in items.indices.reversed()) {
+            if (items[index] == null)
+                lastEmpty = index
+            else
+                break
+        }
+        return lastEmpty
+    }
+
+    /**
      * Calculates the amount of slots that are occupied in this container.
      */
     val occupiedSlotCount: Int get() = items.count { it != null }
