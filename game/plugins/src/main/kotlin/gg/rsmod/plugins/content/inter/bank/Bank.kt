@@ -6,9 +6,7 @@ import gg.rsmod.game.model.entity.Player
 import gg.rsmod.game.model.item.Item
 import gg.rsmod.plugins.api.InterfaceDestination
 import gg.rsmod.plugins.api.ext.*
-import gg.rsmod.plugins.content.inter.bank.BankTabs.insertionPoint
 import gg.rsmod.plugins.content.inter.bank.BankTabs.SELECTED_TAB_VARBIT
-import gg.rsmod.plugins.content.inter.bank.BankTabs.BANK_TAB_ROOT_VARBIT
 
 /**
  * @author Tom <rspsmods@gmail.com>
@@ -25,6 +23,7 @@ object Bank {
     const val LAST_X_INPUT = 3960
     const val QUANTITY_VARBIT = 6590
     const val INCINERATOR_VARBIT = 5102
+
 
     /**
      * Visual varbit for the "Bank your loot" tab area interface when storing
@@ -70,7 +69,7 @@ object Bank {
                      * definition.
                      */
                     if (def.placeholderLink > 0) {
-                        p.bank[i] = Item(def.placeholderLink, 0)
+                        p.bank[i] = Item(def.placeholderLink, -2)
                     }
                 }
             }
@@ -83,21 +82,16 @@ object Bank {
         }
     }
 
-    fun deposit(p: Player, id: Int, amt: Int) {
-        val from = p.inventory
-        val to = p.bank
-
-        val oldFree = to.freeSlotCount
-        val curTab = p.getVarbit(SELECTED_TAB_VARBIT)
-
-        val amount = Math.min(from.getItemCount(id), amt)
+    fun deposit(player: Player, id: Int, amt: Int) {
+        val from = player.inventory
+        val to = player.bank
+        val amount = from.getItemCount(id).coerceAtMost(amt)
 
         var deposited = 0
         for (i in 0 until from.capacity) {
             val item = from[i] ?: continue
-            if (item.id != id) {
+            if (item.id != id)
                 continue
-            }
 
             if (deposited >= amount) {
                 break
@@ -110,23 +104,30 @@ object Bank {
                 copy.copyAttr(item)
             }
 
-            val placeholderSlot = to.removePlaceholder(p.world, copy)
-            val transfer = from.transfer(to, item = copy, fromSlot = i, toSlot = placeholderSlot, note = false, unnote = true)
+            var toSlot = to.removePlaceholder(player.world, copy)
+            var placeholderOrExistingStack = true
+            val curTab = player.getVarbit(SELECTED_TAB_VARBIT)
+            if (toSlot == -1 && !to.contains(item.id)) {
+                placeholderOrExistingStack = false
+                toSlot = to.getLastFreeSlot()
+            }
 
-            if (transfer != null) {
-                deposited += transfer.completed
-                if(placeholderSlot==-1 && curTab!=0 && oldFree!=to.freeSlotCount){ // shift newly add items to tab position
-                    var fromPos = to.getItemIndex(copy.id, false)
-                    fromPos = if(fromPos != -1) fromPos else to.nextFreeSlot-1
-                    val toPos = insertionPoint(p, curTab)
-                    to.insert(fromPos, toPos)
-                    p.setVarbit(BANK_TAB_ROOT_VARBIT+curTab, p.getVarbit(BANK_TAB_ROOT_VARBIT+curTab)+1)
+
+            val transaction = from.transfer(to, item = copy, fromSlot = i, toSlot = toSlot, note = false, unnote = true)
+
+            if (transaction != null) {
+                deposited += transaction.completed
+            }
+
+            if (deposited > 0) {
+                if (curTab != 0 && !placeholderOrExistingStack) {
+                    BankTabs.dropToTab(player, curTab, to.getLastFreeSlot() - 1)
                 }
             }
         }
 
         if (deposited == 0) {
-            p.message("Bank full.")
+            player.message("Bank full.")
         }
     }
 
@@ -154,7 +155,7 @@ object Bank {
 
     fun ItemContainer.removePlaceholder(world: World, item: Item): Int {
         val def = item.toUnnoted(world.definitions).getDef(world.definitions)
-        val slot = if (def.placeholderLink > 0) indexOfFirst { it?.id == def.placeholderLink && it.amount == 0 } else -1
+        val slot = if (def.placeholderLink > 0) indexOfFirst { it?.id == def.placeholderLink && it.amount == -2 } else -1
         if (slot != -1) {
             this[slot] = null
         }

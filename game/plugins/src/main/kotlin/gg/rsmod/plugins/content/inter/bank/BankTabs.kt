@@ -59,6 +59,41 @@ object BankTabs{
         }
     }
 
+
+    /**
+     * Handles the dropping of items into the specified tab of the player's [Bank] from a source slot.
+     */
+    fun dropToTab(player: Player, dstTab: Int, srcSlot: Int){
+        val container = player.bank
+        val curTab = getCurrentTab(player, srcSlot)
+
+        if(dstTab == curTab){
+            return
+        }
+        else{
+            if(dstTab == 0){ //add to main tab don't insert
+                container.insert(srcSlot, container.nextFreeSlot - 1)
+                player.setVarbit(BANK_TAB_ROOT_VARBIT+curTab, player.getVarbit(BANK_TAB_ROOT_VARBIT+curTab)-1)
+                // check for empty tab shift
+                if(player.getVarbit(BANK_TAB_ROOT_VARBIT+curTab)==0 && curTab<=numTabsUnlocked(player))
+                    shiftTabs(player, curTab)
+            } else{
+                if(dstTab < curTab || curTab == 0)
+                    container.insert(srcSlot, insertionPoint(player, dstTab))
+                else
+                    container.insert(srcSlot, insertionPoint(player, dstTab) - 1)
+                player.setVarbit(BANK_TAB_ROOT_VARBIT+dstTab, player.getVarbit(BANK_TAB_ROOT_VARBIT+dstTab)+1)
+                if(curTab != 0){
+                    player.setVarbit(BANK_TAB_ROOT_VARBIT+curTab, player.getVarbit(BANK_TAB_ROOT_VARBIT+curTab)-1)
+                    // check for empty tab shift
+                    if(player.getVarbit(BANK_TAB_ROOT_VARBIT+curTab)==0 && curTab<=numTabsUnlocked(player))
+                        shiftTabs(player, curTab)
+                }
+            }
+        }
+    }
+
+
     /**
      * Determines the tab a given slot falls into based on
      * associative varbit analysis.
@@ -119,9 +154,17 @@ object BankTabs{
     fun insertionPoint(player: Player, tabIndex: Int = 0) : Int {
         if(tabIndex == 0)
             return player.bank.nextFreeSlot
+        var prevDex = 0
         var dex = 0
-        for(tab in 1..tabIndex)
-            dex += player.getVarbit(BANK_TAB_ROOT_VARBIT+tab)
+        for(tab in 1..tabIndex) {
+            prevDex = dex
+            dex += player.getVarbit(BANK_TAB_ROOT_VARBIT + tab)
+        }
+
+        // truncate empty spots, but stay in current tab
+        while(dex!=0 && player.bank[dex-1] == null && dex > prevDex) {
+            dex--
+        }
         return dex
     }
 
