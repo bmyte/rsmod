@@ -215,8 +215,8 @@ class GamePacketReader(packet: GamePacket) {
 
             when (type) {
                 DataType.MEDIUM -> {
-                    longValue = longValue or (buffer.readByte().toInt() and 0xFF).toLong()
                     longValue = longValue or (buffer.readByte().toInt() and 0xFF shl 16).toLong()
+                    longValue = longValue or (buffer.readByte().toInt() and 0xFF).toLong()
                     longValue = longValue or (buffer.readByte().toInt() and 0xFF shl 8).toLong()
                 }
                 DataType.INT -> {

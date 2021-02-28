@@ -214,7 +214,7 @@ class PlayerUpdateBlockSegment(val other: Player, private val newPlayer: Boolean
 
                 val structure = blocks.updateBlocks[blockType]!!.values
                 buf.put(structure[0].type, structure[0].order, structure[0].transformation, appBuf.byteBuf.readableBytes())
-                buf.putBytes(structure[1].transformation, appBuf.byteBuf)
+                buf.putBytesReverse(structure[1].transformation, appBuf.byteBuf.array(), appBuf.byteBuf.readableBytes())
             }
 
             UpdateBlockType.HITMARK -> {

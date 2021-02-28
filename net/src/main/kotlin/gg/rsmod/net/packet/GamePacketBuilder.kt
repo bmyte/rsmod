@@ -174,8 +174,8 @@ class GamePacketBuilder {
 
                 when (type) {
                     DataType.MEDIUM -> {
-                        buffer.writeByte(longValue.toByte().toInt())
                         buffer.writeByte((longValue shr 16).toByte().toInt())
+                        buffer.writeByte(longValue.toByte().toInt())
                         buffer.writeByte((longValue shr 8).toByte().toInt())
                     }
                     DataType.INT -> {

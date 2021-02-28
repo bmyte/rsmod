@@ -199,10 +199,11 @@ class LoginDecoder(private val serverRevision: Int, private val cacheCrcs: IntAr
          */
         for(i in CRCorder.indices){
             when(val idx = CRCorder[i]){
-                9,20,4 -> crcs[idx] = xteaBuf.readInt()
-                11,18,1,19,2,0,16 -> crcs[idx] = xteaBuf.readLEInt()
-                17,15,7 -> crcs[idx] = xteaBuf.readMiddleEndianInt()
-                5,13,12,10,14,8,3,6 -> crcs[idx] = xteaBuf.readInverseMiddleInt()
+                4,9,10,14,17,18,20 -> crcs[idx] = xteaBuf.readInt()
+                3,8,11,12 -> crcs[idx] = xteaBuf.readInverseMiddleInt()
+                0,6,7,13,16,19 -> crcs[idx] = xteaBuf.readLEInt()
+                1,2,5,15 -> crcs[idx] = xteaBuf.readMiddleEndianInt()
+
             }
         }
 
@@ -229,10 +230,6 @@ class LoginDecoder(private val serverRevision: Int, private val cacheCrcs: IntAr
          * As of revision 190 the client now sends the CRCs out of order
          * and with varying byte orders
          */
-        private val CRCorder = intArrayOf(
-                5,13,12,11,9,
-                20,10,18,17,15,
-                1,14,19,8,2,
-                3,0,4,16,7,6)
+        private val CRCorder = intArrayOf(5, 6, 7, 11, 8, 12, 3, 13, 20, 18, 9, 14, 10, 19, 2, 17, 0, 16, 4, 15, 1)
     }
 }
